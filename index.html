@@ -2,11 +2,157 @@
 <html>
 
 <head>
+
     <base href='/'>
+    <style>body {
+    margin: 0;
+    overflow: hidden;
+}
+
+canvas {
+    width: 500px;
+    height: 500px;
+}
+</style>
+<script src='http://localhost:4200/vendor/domready@1.0.0/domready.js'></script>
+
+<script src='http://localhost:4200/vendor/davinci-mathscript@1.3.5/davinci-mathscript.min.js'></script>
+<script src='https://unpkg.com/systemjs@0.19.34/dist/system.js'></script>
 </head>
 
 <body>
-    Hello, World!
+<script>
+try {
+if (window['System']) {
+System.config({
+  "warnings": false,
+  "map": {
+    "davinci-eight": "https://unpkg.com/davinci-eight@8.4.3/build/browser/index.js"
+  }
+});
+}
+} catch(e) { console.error(e) }
+</script>
+<script>
+try {
+System.register('./index.js', ['./main.js'], function (exports_1, context_1) {
+    'use strict';
+    var main_js_1;
+    var __moduleName = context_1 && context_1.id;
+    return {
+        setters: [function (main_js_1_1) {
+                main_js_1 = main_js_1_1;
+            }],
+        execute: function () {
+            DomReady.ready(main_js_1.main).catch(function (e) {
+                console.error(e);
+            });
+        }
+    };
+});
+System.register('./main.js', [
+    'davinci-eight',
+    './windowResizer.js'
+], function (exports_1, context_1) {
+    'use strict';
+    var davinci_eight_1, davinci_eight_2, davinci_eight_3, davinci_eight_4, davinci_eight_5, davinci_eight_6, windowResizer_js_1;
+    var __moduleName = context_1 && context_1.id;
+    function main() {
+        var e2 = davinci_eight_6.Geometric3.e2();
+        var e3 = davinci_eight_6.Geometric3.e3();
+        var engine = new davinci_eight_1.Engine('canvas', {
+            eightLogging: true,
+            webglLogging: true,
+            contextId: 'webgl'
+        }, document).size(500, 500).clearColor(0.01, 0.1, 0.1, 1).enable(davinci_eight_1.Capability.DEPTH_TEST);
+        console.log(Ms.add(Ms.add('engine.contextId=\'', engine.contextId), '\''));
+        var ambients = [];
+        var camera = new davinci_eight_2.PerspectiveCamera();
+        camera.eye = Ms.add(e2, Ms.mul(3, e3));
+        ambients.push(camera);
+        var dirLight = new davinci_eight_2.DirectionalLight();
+        ambients.push(dirLight);
+        var box = new davinci_eight_3.Box(engine, {
+            color: davinci_eight_4.Color.gray,
+            mode: 'wire'
+        });
+        var basis = new davinci_eight_3.Basis(engine);
+        var trackball = new davinci_eight_5.TrackballControls(camera, window);
+        trackball.subscribe(engine.canvas);
+        trackball.enableContextMenu();
+        var animate = function (_timestamp) {
+            engine.clear();
+            trackball.update();
+            dirLight.direction.copy(camera.look).sub(camera.eye);
+            var t = Ms.mul(_timestamp, 0.001);
+            box.R.rotorFromGeneratorAngle({
+                xy: 0,
+                yz: 1,
+                zx: 0
+            }, t);
+            box.render(ambients);
+            basis.render(ambients);
+            requestAnimationFrame(animate);
+        };
+        windowResizer_js_1.windowResizer(engine, camera).resize();
+        requestAnimationFrame(animate);
+    }
+    exports_1('main', main);
+    return {
+        setters: [
+            function (davinci_eight_1_1) {
+                davinci_eight_1 = davinci_eight_1_1;
+                davinci_eight_2 = davinci_eight_1_1;
+                davinci_eight_3 = davinci_eight_1_1;
+                davinci_eight_4 = davinci_eight_1_1;
+                davinci_eight_5 = davinci_eight_1_1;
+                davinci_eight_6 = davinci_eight_1_1;
+            },
+            function (windowResizer_js_1_1) {
+                windowResizer_js_1 = windowResizer_js_1_1;
+            }
+        ],
+        execute: function () {
+        }
+    };
+});
+System.register('./windowResizer.js', [], function (exports_1, context_1) {
+    'use strict';
+    var __moduleName = context_1 && context_1.id;
+    function windowResizer(engine, camera) {
+        var callback = function () {
+            engine.size(window.innerWidth, window.innerHeight);
+            engine.canvas.style.width = Ms.add(window.innerWidth, 'px');
+            engine.canvas.style.height = Ms.add(window.innerHeight, 'px');
+            camera.aspect = Ms.div(window.innerWidth, window.innerHeight);
+        };
+        window.addEventListener('resize', callback, false);
+        var that = {
+            resize: function () {
+                callback();
+                return that;
+            },
+            stop: function () {
+                window.removeEventListener('resize', callback);
+                return that;
+            }
+        };
+        return that;
+    }
+    exports_1('windowResizer', windowResizer);
+    return {
+        setters: [],
+        execute: function () {
+        }
+    };
+});
+} catch(e) { console.error(e) }
+</script>
+    <canvas id='canvas'></canvas>
+<script>
+System.defaultJSExtensions = true
+System.import('./index.js').catch(function(e) { console.error(e) })
+</script>
 </body>
 
 </html>
